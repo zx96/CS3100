@@ -1,12 +1,25 @@
-//
-// Created by jonathan on 3/8/16.
-//
+/**
+ * Organization Tree
+ *
+ * Stores a set of nodes representing employees in an organization.
+ * Space overhead: 3n+4 words for a full array
+ *                 (~16% overhead assuming 16 words of data per node)
+ *
+ * Author: Jonathan Zentgraf
+ */
 
 #include "OrgTree.h"
 #include <iostream>
 
 #define ORGTREE_DEFAULT_CAPACITY 10
 
+/**
+ * Constructs the OrgTree with the default capacity.
+ *
+ * Precondition:  None.
+ * Postcondition: The OrgTree is initialized with an empty array.
+ * Performance:   Θ(1)
+ */
 OrgTree::OrgTree()
 {
 	// allocate the tree array on the heap
@@ -14,10 +27,12 @@ OrgTree::OrgTree()
 	capacity = ORGTREE_DEFAULT_CAPACITY;
 }
 
-/*
- * Destructs the OrgTree
- * Pre:  None.
- * Post: None.
+/**
+ * Destructs the OrgTree.
+ *
+ * Precondition:  None.
+ * Postcondition: The OrgTree is destroyed and its memory is freed.
+ * Performance:   Θ(n), n is the total number of nodes in the tree
  */
 OrgTree::~OrgTree()
 {
@@ -25,6 +40,14 @@ OrgTree::~OrgTree()
 	delete[] tree;
 }
 
+/**
+ * Adds a new root node to the tree.  If another root already exists, it is
+ * made a child of the new root node.
+ *
+ * Precondition:  None.
+ * Postcondition: The tree is assigned a new root node.
+ * Performance:   Θ(1)
+ */
 void OrgTree::addRoot(std::string title, std::string name)
 {
 	// insert the root node in the array
@@ -42,47 +65,110 @@ void OrgTree::addRoot(std::string title, std::string name)
 	size++;
 }
 
+/**
+ * Returns the number of nodes in the tree.
+ *
+ * Precondition:  None.
+ * Postcondition: None.
+ * Performance:   Θ(1)
+ *
+ * Returns:       The number of nodes in the tree.
+ */
 unsigned int OrgTree::getSize()
 {
 	return size;
 }
 
+/**
+ * Returns the index of the root node of the tree.
+ *
+ * Precondition:  None.
+ * Postcondition: None.
+ * Performance:   Θ(1)
+ *
+ * Returns:       The root node's index
+ */
 TREENODEPTR OrgTree::getRoot()
 {
 	return root;
 }
 
+/**
+ * Returns the index of the leftmost child of a node.
+ *
+ * Precondition:  Node is a valid index in the tree.
+ * Postcondition: None.
+ * Performance:   Θ(1)
+ *
+ * Returns:       The index of the leftmost child of node.
+ */
 TREENODEPTR OrgTree::leftmostChild(TREENODEPTR node)
 {
 	return tree[node].leftmostChild;
 }
 
+/**
+ * Returns the index of the right sibling of a node.
+ *
+ * Precondition:  Node is a valid index in the tree.
+ * Postcondition: None.
+ * Performance:   Θ(1)
+ *
+ * Returns:       The index of the right sibling of node.
+ */
 TREENODEPTR OrgTree::rightSibling(TREENODEPTR node)
 {
 	return tree[node].rightSibling;
 }
 
+/**
+ * Returns the index of the parent of a node.
+ *
+ * Precondition:  Node is a valid index in the tree.
+ * Postcondition: None.
+ * Performance:   Θ(1)
+ *
+ * Returns:       The index of the parent of node.
+ */
 TREENODEPTR OrgTree::parent(TREENODEPTR node)
 {
 	return tree[node].parent;
 }
 
-
+/**
+ * Returns the title of the employee represented by a node
+ *
+ * Precondition:  Node is a valid index in the tree.
+ * Postcondition: None.
+ * Performance:   Θ(1)
+ *
+ * Returns:       The title of the employee represented by node.
+ */
 std::string OrgTree::title(TREENODEPTR node)
 {
 	return tree[node].title;
 }
 
+/**
+ * Returns the name of the employee represented by a node
+ *
+ * Precondition:  Node is a valid index in the tree.
+ * Postcondition: None.
+ * Performance:   Θ(1)
+ *
+ * Returns:       The name of the employee represented by node.
+ */
 std::string OrgTree::name(TREENODEPTR node)
 {
 	return tree[node].name;
 }
 
-/*
- * Performs a traversal of the tree and prints the contents to stdout
+/**
+ * Performs a traversal of the tree and prints the contents to stdout.
+ *
  * Precondition:  None.
  * Postcondition: None.
- * Performance:   O(n), n is the total number of nodes in the tree
+ * Performance:   Θ(n), n is the total number of nodes in the subtree
  */
 void OrgTree::printSubTree(TREENODEPTR subTreeRoot, int level = 0)
 {
@@ -101,11 +187,29 @@ void OrgTree::printSubTree(TREENODEPTR subTreeRoot, int level = 0)
 	}
 }
 
+/**
+ * Prints the contents of the entire tree to stdout.
+ *
+ * Precondition:  None.
+ * Postcondition: None.
+ * Performance:   Θ(n), n is the total number of nodes in the tree
+ */
 void OrgTree::printTree()
 {
 	printSubTree(root);
 }
 
+/**
+ * Returns the index of the node with a given title in the tree.
+ *
+ * Precondition:  None.
+ * Postcondition: None.
+ * Performance:   Best: Θ(1)
+ *                Worst: Θ(n), n is the total number of nodes in the tree
+ *
+ * Returns:       The index of the node with the given title,
+ *                or -1 if there is no such node.
+ */
 TREENODEPTR OrgTree::find(std::string title)
 {
 	for (int i = 0; i < size; i++)
@@ -125,13 +229,22 @@ void OrgTree::write(std::string filename)
 
 }
 
-/*
- * Inserts a new employee into the tree as the rightmost child of supervisor.
- * Pre:  supervisor is a valid index to a node in the tree.
- * Post: The new employee is inserted into the tree.
+/**
+ * Inserts a new node into the tree as the rightmost child of supervisor.
+ *
+ * Precondition:  None.
+ * Postcondition: The new node is inserted into the tree.
+ * Performance:   Θ(n), n = number of child nodes of supervisor
  */
 void OrgTree::hire(TREENODEPTR supervisor, std::string title, std::string name)
 {
+	// check that the supervisor is a valid node
+	if (supervisor >= size)
+	{
+		std::cerr << "Supervisor node does not exist" << std::endl;
+		return;
+	}
+
 	// insert the new hire as the rightmost child
 	ensureCapacity();
 	tree[size] = TreeNode{title, name, supervisor, TREENULLPTR, TREENULLPTR};
@@ -154,9 +267,16 @@ void OrgTree::hire(TREENODEPTR supervisor, std::string title, std::string name)
 	size++;
 }
 
-/*
- * Removes an employee from the tree.
- * If the employee
+/**
+ * Removes a node from the tree.
+ * If the node is the root node or doesn't exist, does nothing.
+ * The removed node's children become children of the removed node's parent.
+ *
+ * Precondition:  None.
+ * Postcondition: The employee is removed if valid.
+ * Performance:   Θ(n) if employee exists and can be removed, Θ(1) otherwise.
+ *
+ * Returns:       true if employee was removed, false if the employee was invalid
  */
 bool OrgTree::fire(std::string title)
 {
@@ -228,8 +348,9 @@ bool OrgTree::fire(std::string title)
 	return true;
 }
 
-/*
+/**
  * Ensures that there is room in the underlying array to insert another item
+ *
  * Precondition:  The tree has a capacity of at least 2
  * Postcondition: There is enough room to insert at least one more item in the array.
  * Performance:   Best: Θ(1), Worst: Θ(n)
