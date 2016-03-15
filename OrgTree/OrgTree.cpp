@@ -86,7 +86,7 @@ unsigned int OrgTree::getSize()
  * Postcondition: None.
  * Performance:   Θ(1)
  *
- * Returns:       The root node's index
+ * Returns:       The root node's index, or -1 if there is no root
  */
 TREENODEPTR OrgTree::getRoot()
 {
@@ -96,70 +96,100 @@ TREENODEPTR OrgTree::getRoot()
 /**
  * Returns the index of the leftmost child of a node.
  *
- * Precondition:  Node is a valid index in the tree.
+ * Precondition:  None.
  * Postcondition: None.
  * Performance:   Θ(1)
  *
- * Returns:       The index of the leftmost child of node.
+ * Returns:       The index of the leftmost child of node,
+ *                or -1 if the node does not exist.
  */
 TREENODEPTR OrgTree::leftmostChild(TREENODEPTR node)
 {
+	if (node >= size)
+	{
+		std::cerr << "(leftmostChild) Node does not exist." << std::endl;
+		return -1;
+	}
 	return tree[node].leftmostChild;
 }
 
 /**
  * Returns the index of the right sibling of a node.
  *
- * Precondition:  Node is a valid index in the tree.
+ * Precondition:  None.
  * Postcondition: None.
  * Performance:   Θ(1)
  *
- * Returns:       The index of the right sibling of node.
+ * Returns:       The index of the right sibling of node,
+ *                or -1 if the node does not exist.
  */
 TREENODEPTR OrgTree::rightSibling(TREENODEPTR node)
 {
+	if (node >= size)
+	{
+		std::cerr << "(rightSibling) Node does not exist." << std::endl;
+		return -1;
+	}
 	return tree[node].rightSibling;
 }
 
 /**
  * Returns the index of the parent of a node.
  *
- * Precondition:  Node is a valid index in the tree.
+ * Precondition:  None.
  * Postcondition: None.
  * Performance:   Θ(1)
  *
- * Returns:       The index of the parent of node.
+ * Returns:       The index of the parent of node,
+ *                or -1 if the node does not exist.
  */
 TREENODEPTR OrgTree::parent(TREENODEPTR node)
 {
+	if (node >= size)
+	{
+		std::cerr << "(parent) Node does not exist." << std::endl;
+		return -1;
+	}
 	return tree[node].parent;
 }
 
 /**
- * Returns the title of the employee represented by a node
+ * Returns the title of the employee represented by a node.
  *
- * Precondition:  Node is a valid index in the tree.
+ * Precondition:  None.
  * Postcondition: None.
  * Performance:   Θ(1)
  *
- * Returns:       The title of the employee represented by node.
+ * Returns:       The title of the employee represented by node,
+ *                or nullptr if the node does not exist.
  */
 std::string OrgTree::title(TREENODEPTR node)
 {
+	if (node >= size)
+	{
+		std::cerr << "(title) Node does not exist." << std::endl;
+		return nullptr;
+	}
 	return tree[node].title;
 }
 
 /**
- * Returns the name of the employee represented by a node
+ * Returns the name of the employee represented by a node.
  *
- * Precondition:  Node is a valid index in the tree.
+ * Precondition:  None.
  * Postcondition: None.
  * Performance:   Θ(1)
  *
- * Returns:       The name of the employee represented by node.
+ * Returns:       The name of the employee represented by node,
+ *                or -1 if the node does not exist.
  */
 std::string OrgTree::name(TREENODEPTR node)
 {
+	if (node >= size)
+	{
+		std::cerr << "(name) Node does not exist." << std::endl;
+		return nullptr;
+	}
 	return tree[node].name;
 }
 
@@ -241,7 +271,7 @@ void OrgTree::hire(TREENODEPTR supervisor, std::string title, std::string name)
 	// check that the supervisor is a valid node
 	if (supervisor >= size)
 	{
-		std::cerr << "Supervisor node does not exist" << std::endl;
+		std::cerr << "(hire) Supervisor node does not exist" << std::endl;
 		return;
 	}
 
@@ -260,7 +290,6 @@ void OrgTree::hire(TREENODEPTR supervisor, std::string title, std::string name)
 		{
 			currentChild = tree[currentChild].rightSibling;
 		}
-		std::cout << "Current child: " << currentChild << std::endl << std::endl;
 		tree[currentChild].rightSibling = size;
 	}
 
@@ -283,7 +312,15 @@ bool OrgTree::fire(std::string title)
 	// cannot fire root node or nonexistent employee
 	// parent pointer will never be null because we can't fire the root node
 	int index = find(title);
-	if (index == TREENULLPTR || index == root) return false;
+	if (index == TREENULLPTR)
+	{
+		std::cerr << "(fire) Node does not exist." << std::endl;
+		return false;
+	}
+	else if (index == root)
+	{
+		std::cerr << "(fire) Cannot fire root node." << std::endl;
+	}
 
 	// update parent indices of children
 	for (TREENODEPTR currentChild = tree[index].leftmostChild;
@@ -351,18 +388,18 @@ bool OrgTree::fire(std::string title)
 /**
  * Ensures that there is room in the underlying array to insert another item
  *
- * Precondition:  The tree has a capacity of at least 2
- * Postcondition: There is enough room to insert at least one more item in the array.
- * Performance:   Best: Θ(1), Worst: Θ(n)
+ * Precondition:  The tree has a capacity of at least 1.
+ * Postcondition: The array size is doubled
+ * Performance:   Best: Θ(1)
+ *                Worst: Θ(n)
  */
 void OrgTree::ensureCapacity()
 {
 	// we only need to worry if the capacity is too small
 	if (capacity < size + 1)
 	{
-		// create a new tree with 1.5 times the capacity
-		// this fails if the initial capacity is 1
-		capacity = capacity + (capacity >> 1);
+		// create a new tree with twice the capacity
+		capacity <<= 1;
 		TreeNode *newTree = new TreeNode[capacity];
 		// copy the tree contents
 		for (int i = 0; i < size; i++)

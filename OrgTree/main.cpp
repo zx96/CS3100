@@ -5,6 +5,7 @@ using namespace std;
 
 int main() {
     OrgTree t;
+	t.printTree();
     t.addRoot("CEO", "Fred");
     int root = t.getRoot();
     t.hire(root, "CFO", "George");
