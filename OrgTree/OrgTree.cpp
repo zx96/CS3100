@@ -10,6 +10,7 @@
 
 #include "OrgTree.h"
 #include <iostream>
+#include <fstream>
 
 #define ORGTREE_DEFAULT_CAPACITY 10
 
@@ -74,7 +75,7 @@ void OrgTree::addRoot(std::string title, std::string name)
  *
  * Returns:       The number of nodes in the tree.
  */
-unsigned int OrgTree::getSize()
+unsigned int OrgTree::getSize() const
 {
 	return size;
 }
@@ -88,7 +89,7 @@ unsigned int OrgTree::getSize()
  *
  * Returns:       The root node's index, or -1 if there is no root
  */
-TREENODEPTR OrgTree::getRoot()
+TREENODEPTR OrgTree::getRoot() const
 {
 	return root;
 }
@@ -103,7 +104,7 @@ TREENODEPTR OrgTree::getRoot()
  * Returns:       The index of the leftmost child of node,
  *                or -1 if the node does not exist.
  */
-TREENODEPTR OrgTree::leftmostChild(TREENODEPTR node)
+TREENODEPTR OrgTree::leftmostChild(TREENODEPTR node) const
 {
 	if (node >= size)
 	{
@@ -123,7 +124,7 @@ TREENODEPTR OrgTree::leftmostChild(TREENODEPTR node)
  * Returns:       The index of the right sibling of node,
  *                or -1 if the node does not exist.
  */
-TREENODEPTR OrgTree::rightSibling(TREENODEPTR node)
+TREENODEPTR OrgTree::rightSibling(TREENODEPTR node) const
 {
 	if (node >= size)
 	{
@@ -143,7 +144,7 @@ TREENODEPTR OrgTree::rightSibling(TREENODEPTR node)
  * Returns:       The index of the parent of node,
  *                or -1 if the node does not exist.
  */
-TREENODEPTR OrgTree::parent(TREENODEPTR node)
+TREENODEPTR OrgTree::parent(TREENODEPTR node) const
 {
 	if (node >= size)
 	{
@@ -163,7 +164,7 @@ TREENODEPTR OrgTree::parent(TREENODEPTR node)
  * Returns:       The title of the employee represented by node,
  *                or nullptr if the node does not exist.
  */
-std::string OrgTree::title(TREENODEPTR node)
+std::string OrgTree::title(TREENODEPTR node) const
 {
 	if (node >= size)
 	{
@@ -183,7 +184,7 @@ std::string OrgTree::title(TREENODEPTR node)
  * Returns:       The name of the employee represented by node,
  *                or -1 if the node does not exist.
  */
-std::string OrgTree::name(TREENODEPTR node)
+std::string OrgTree::name(TREENODEPTR node) const
 {
 	if (node >= size)
 	{
@@ -200,7 +201,19 @@ std::string OrgTree::name(TREENODEPTR node)
  * Postcondition: None.
  * Performance:   Θ(n), n is the total number of nodes in the subtree
  */
-void OrgTree::printSubTree(TREENODEPTR subTreeRoot, int level = 0)
+void OrgTree::printSubTree(TREENODEPTR subTreeRoot) const
+{
+	_printSubTree(subTreeRoot, 0);
+}
+
+/**
+ * Performs a traversal of the tree starting at the given level and prints the contents to stdout.
+ *
+ * Precondition:  None.
+ * Postcondition: None.
+ * Performance:   Θ(n), n is the total number of nodes in the subtree
+ */
+void OrgTree::_printSubTree(TREENODEPTR subTreeRoot, int level) const
 {
 	// reached a leaf node
 	if (subTreeRoot == TREENULLPTR) return;
@@ -213,7 +226,7 @@ void OrgTree::printSubTree(TREENODEPTR subTreeRoot, int level = 0)
 	for (TREENODEPTR currentChild = tree[subTreeRoot].leftmostChild;
 	     currentChild != TREENULLPTR; currentChild = tree[currentChild].rightSibling)
 	{
-		printSubTree(currentChild, level + 1);
+		_printSubTree(currentChild, level + 1);
 	}
 }
 
@@ -224,7 +237,7 @@ void OrgTree::printSubTree(TREENODEPTR subTreeRoot, int level = 0)
  * Postcondition: None.
  * Performance:   Θ(n), n is the total number of nodes in the tree
  */
-void OrgTree::printTree()
+void OrgTree::printTree() const
 {
 	printSubTree(root);
 }
@@ -240,7 +253,7 @@ void OrgTree::printTree()
  * Returns:       The index of the node with the given title,
  *                or -1 if there is no such node.
  */
-TREENODEPTR OrgTree::find(std::string title)
+TREENODEPTR OrgTree::find(std::string title) const
 {
 	for (int i = 0; i < size; i++)
 	{
@@ -254,9 +267,30 @@ bool OrgTree::read(std::string filename)
 	return false;
 }
 
-void OrgTree::write(std::string filename)
+void OrgTree::write(std::string filename) const
 {
+	std::ofstream file;
+	file.open(filename, std::ofstream::out | std::ofstream::trunc);
 
+	_write(file, root);
+
+	file.close();
+}
+
+void OrgTree::_write(std::ofstream& file, TREENODEPTR subTreeRoot) const
+{
+	// reached a leaf node
+	if (subTreeRoot == TREENULLPTR) return;
+	// write the current node
+	file << tree[subTreeRoot].title << ", " << tree[subTreeRoot].name << std::endl;
+
+	// write all of the child trees
+	for (TREENODEPTR currentChild = tree[subTreeRoot].leftmostChild;
+	     currentChild != TREENULLPTR; currentChild = tree[currentChild].rightSibling)
+	{
+		_write(file, currentChild);
+		file << ")" << std::endl;
+	}
 }
 
 /**

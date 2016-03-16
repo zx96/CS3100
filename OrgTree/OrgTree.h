@@ -1,6 +1,12 @@
-//
-// Created by jonathan on 3/8/16.
-//
+/**
+ * Organization Tree
+ *
+ * Stores a set of nodes representing employees in an organization.
+ * Space overhead: 3n+4 words for a full array
+ *                 (~16% overhead assuming 16 words of data per node)
+ *
+ * Author: Jonathan Zentgraf
+ */
 
 #ifndef ORGTREE_H
 #define ORGTREE_H
@@ -9,7 +15,6 @@
 #define TREENULLPTR -1
 
 #include <string>
-#include <iostream>
 
 struct TreeNode
 {
@@ -30,6 +35,10 @@ private:
 
 	void ensureCapacity();
 
+	void _printSubTree(TREENODEPTR subTreeRoot, int level) const;
+
+	void _write(std::ofstream& file, TREENODEPTR subTreeRoot) const;
+
 public:
 	OrgTree();
 
@@ -37,41 +46,33 @@ public:
 
 	void addRoot(std::string title, std::string name);
 
-	unsigned int getSize();
+	unsigned int getSize() const;
 
-	TREENODEPTR getRoot();
+	TREENODEPTR getRoot() const;
 
-	TREENODEPTR leftmostChild(TREENODEPTR node);
+	TREENODEPTR leftmostChild(TREENODEPTR node) const;
 
-	TREENODEPTR rightSibling(TREENODEPTR node);
+	TREENODEPTR rightSibling(TREENODEPTR node) const;
 
-	TREENODEPTR parent(TREENODEPTR node);
+	TREENODEPTR parent(TREENODEPTR node) const;
 
-	std::string title(TREENODEPTR node);
+	std::string title(TREENODEPTR node) const;
 
-	std::string name(TREENODEPTR node);
+	std::string name(TREENODEPTR node) const;
 
-	void printSubTree(TREENODEPTR subTreeRoot, int level);
+	void printSubTree(TREENODEPTR subTreeRoot) const;
 
-	void printTree();
+	void printTree() const;
 
-	TREENODEPTR find(std::string title);
+	TREENODEPTR find(std::string title) const;
 
 	bool read(std::string filename);
 
-	void write(std::string filename);
+	void write(std::string filename) const;
 
 	void hire(TREENODEPTR supervisor, std::string title, std::string name);
 
 	bool fire(std::string title);
-
-	//debug function
-	void printAll()
-	{
-		for (int i = 0; i < size; i++)
-			std::cout << i << std::endl << tree[i].title << std::endl << tree[i].name << std::endl << tree[i].parent <<
-			std::endl << tree[i].leftmostChild << std::endl << tree[i].rightSibling << std::endl << std::endl;
-	}
 };
 
 

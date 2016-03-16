@@ -25,5 +25,5 @@ int main() {
     t.printAll();
 	t.printTree();
 
-	
+	t.write("test");
 }
