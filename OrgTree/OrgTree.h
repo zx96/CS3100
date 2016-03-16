@@ -44,7 +44,7 @@ public:
 
 	~OrgTree();
 
-	void addRoot(std::string title, std::string name);
+	int addRoot(std::string title, std::string name);
 
 	unsigned int getSize() const;
 
@@ -70,7 +70,7 @@ public:
 
 	void write(std::string filename) const;
 
-	void hire(TREENODEPTR supervisor, std::string title, std::string name);
+	int hire(TREENODEPTR supervisor, std::string title, std::string name);
 
 	bool fire(std::string title);
 };

@@ -48,8 +48,10 @@ OrgTree::~OrgTree()
  * Precondition:  None.
  * Postcondition: The tree is assigned a new root node.
  * Performance:   Θ(1)
+ *
+ * Returns:       The index of the new root node of the tree.
  */
-void OrgTree::addRoot(std::string title, std::string name)
+int OrgTree::addRoot(std::string title, std::string name)
 {
 	// insert the root node in the array
 	ensureCapacity();
@@ -63,7 +65,7 @@ void OrgTree::addRoot(std::string title, std::string name)
 	}
 	// acknowledge the new root
 	root = size;
-	size++;
+	return size++;
 }
 
 /**
@@ -108,7 +110,7 @@ TREENODEPTR OrgTree::leftmostChild(TREENODEPTR node) const
 {
 	if (node >= size)
 	{
-		std::cerr << "(leftmostChild) Node does not exist." << std::endl;
+		std::cerr << "(leftmostChild) Node " << node << " does not exist." << std::endl;
 		return -1;
 	}
 	return tree[node].leftmostChild;
@@ -128,7 +130,7 @@ TREENODEPTR OrgTree::rightSibling(TREENODEPTR node) const
 {
 	if (node >= size)
 	{
-		std::cerr << "(rightSibling) Node does not exist." << std::endl;
+		std::cerr << "(rightSibling) Node " << node << "does not exist." << std::endl;
 		return -1;
 	}
 	return tree[node].rightSibling;
@@ -148,7 +150,7 @@ TREENODEPTR OrgTree::parent(TREENODEPTR node) const
 {
 	if (node >= size)
 	{
-		std::cerr << "(parent) Node does not exist." << std::endl;
+		std::cerr << "(parent) Node " << node << " does not exist." << std::endl;
 		return -1;
 	}
 	return tree[node].parent;
@@ -168,7 +170,7 @@ std::string OrgTree::title(TREENODEPTR node) const
 {
 	if (node >= size)
 	{
-		std::cerr << "(title) Node does not exist." << std::endl;
+		std::cerr << "(title) Node " << node << " does not exist." << std::endl;
 		return nullptr;
 	}
 	return tree[node].title;
@@ -188,7 +190,7 @@ std::string OrgTree::name(TREENODEPTR node) const
 {
 	if (node >= size)
 	{
-		std::cerr << "(name) Node does not exist." << std::endl;
+		std::cerr << "(name) Node " << node << " does not exist." << std::endl;
 		return nullptr;
 	}
 	return tree[node].name;
@@ -264,7 +266,82 @@ TREENODEPTR OrgTree::find(std::string title) const
 
 bool OrgTree::read(std::string filename)
 {
-	return false;
+	std::ifstream file(filename);
+
+	if (!file.is_open())
+	{
+		std::cerr << "(read) Could not open file: " << filename << "." << std::endl;
+		return false;
+	}
+
+	// "erase" the tree's contents
+	size = 0;
+
+	// get the root node
+	int lineNumber = 1;
+	std::string line;
+	std::getline(file, line);
+
+	// parse the root node's data
+	size_t commaIndex = line.find(", ");
+	if (commaIndex == std::string::npos)
+	{
+		std::cerr << "(read) Malformed file: " << filename << "." << std::endl;
+		std::cerr << "       Root node is not valid.  Nodes must be of the format: '[title], [name]'." << std::endl;
+		return false;
+	}
+	std::string title = line.substr(0, commaIndex);
+	std::string name = line.substr(commaIndex + 2, line.length());
+	TREENODEPTR currentParent = addRoot(title, name);
+
+	// iterate through the file
+	while (std::getline(file, line))
+	{
+		// keep track of the line we are processing (for error output)
+		lineNumber++;
+
+		// if the parent is null, we've already reached the end of the tree (but still had more to read from the file)
+		if (currentParent == TREENULLPTR)
+		{
+			std::cerr << "(read) Malformed file: " << filename << "." << std::endl;
+			std::cerr << "       Reached end of tree before end of file.  (Too many ')')." << std::endl;
+			std::cerr << "       (line " << lineNumber << ")" << std::endl;
+			return false;
+		}
+
+		// each ) tells us to go back up a level (end of subtree)
+		if (line == ")")
+		{
+			currentParent = tree[currentParent].parent;
+		}
+		else // descend into tree, adding new nodes as we go
+		{
+			// validate and extract name and title
+			commaIndex = line.find(", ");
+			if (commaIndex == std::string::npos)
+			{
+				std::cerr << "(read) Malformed file: " << filename << "." << std::endl;
+				std::cerr << "       Node is not valid.  Nodes must be of the format: '[title], [name]'." << std::endl;
+				std::cerr << "       (line " << lineNumber << ")" << std::endl;
+				return false;
+			}
+			title = line.substr(0, commaIndex);
+			name = line.substr(commaIndex + 2, line.length());
+			// hire and descend a level
+			currentParent = hire(currentParent, title, name);
+		}
+	}
+
+	// the final parent should be TREENULLPTR (meaning we ended up back at the root node)
+	if (currentParent != TREENULLPTR)
+	{
+		std::cerr << "(read) Malformed file: " << filename << "." << std::endl;
+		std::cerr << "       Reached end of file before end of tree.  (Too few ')')." << std::endl;
+		std::cerr << "       (line " << lineNumber << ")" << std::endl;
+		return false;
+	}
+
+	return true;
 }
 
 void OrgTree::write(std::string filename) const
@@ -289,8 +366,10 @@ void OrgTree::_write(std::ofstream& file, TREENODEPTR subTreeRoot) const
 	     currentChild != TREENULLPTR; currentChild = tree[currentChild].rightSibling)
 	{
 		_write(file, currentChild);
-		file << ")" << std::endl;
 	}
+
+	// signify that we've reached the end of our subtree
+	file << ")" << std::endl;
 }
 
 /**
@@ -299,14 +378,16 @@ void OrgTree::_write(std::ofstream& file, TREENODEPTR subTreeRoot) const
  * Precondition:  None.
  * Postcondition: The new node is inserted into the tree.
  * Performance:   Θ(n), n = number of child nodes of supervisor
+ *
+ * Returns:       The index of the newly added node, or -1 if the node couldn't be added.
  */
-void OrgTree::hire(TREENODEPTR supervisor, std::string title, std::string name)
+int OrgTree::hire(TREENODEPTR supervisor, std::string title, std::string name)
 {
 	// check that the supervisor is a valid node
 	if (supervisor >= size)
 	{
-		std::cerr << "(hire) Supervisor node does not exist" << std::endl;
-		return;
+		std::cerr << "(hire) Supervisor node " << supervisor << " does not exist" << std::endl;
+		return -1;
 	}
 
 	// insert the new hire as the rightmost child
@@ -327,7 +408,7 @@ void OrgTree::hire(TREENODEPTR supervisor, std::string title, std::string name)
 		tree[currentChild].rightSibling = size;
 	}
 
-	size++;
+	return size++;
 }
 
 /**
@@ -348,7 +429,7 @@ bool OrgTree::fire(std::string title)
 	int index = find(title);
 	if (index == TREENULLPTR)
 	{
-		std::cerr << "(fire) Node does not exist." << std::endl;
+		std::cerr << "(fire) Node with title \"" << title << "\" does not exist." << std::endl;
 		return false;
 	}
 	else if (index == root)
