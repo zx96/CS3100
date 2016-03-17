@@ -36,23 +36,31 @@ int main() {
 
 	delete t;
 
-	OrgTree t2;
-	if (!t2.read("test")) return -1;
+	OrgTree *t2 = new OrgTree();
+	if (!t2->read("test")) return -1;
 
-	t2.printTree();
+	t2->printTree();
 	std::cout << std::endl;
 
-	std::cout << t2.getSize() << std::endl;
-	std::cout << t2.leftmostChild(t2.getSize()) << std::endl;
+	std::cout << t2->getSize() << std::endl;
+	std::cout << t2->leftmostChild(t2->getSize()) << std::endl;
 	std::cout << std::endl;
 
-	std::cout << t2.getRoot() << std::endl;
-	t2.addRoot("Bob", "Jones");
-	std::cout << t2.getRoot() << std::endl;
+	std::cout << t2->getRoot() << std::endl;
+	t2->addRoot("Bob", "Jones");
+	std::cout << t2->getRoot() << std::endl;
 	std::cout << std::endl;
 
-	//t2.fire("1");
-	//t2.fire("4");
-	//t2.fire("5");
-	t2.printTree();
+	t2->printTree();
+
+	t2->fire("1");
+	t2->printTree();
+	t2->fire("4");
+	t2->printTree();
+	t2->fire("3");
+	t2->printTree();
+	t2->fire("5");
+	t2->printTree();
+	t2->fire("Numbers Guy");
+	t2->printTree();
 }

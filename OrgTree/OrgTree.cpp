@@ -445,15 +445,6 @@ bool OrgTree::fire(std::string title)
 		tree[currentChild].parent = tree[index].parent;
 	}
 
-	// skip to rightmost child
-	TREENODEPTR currentChild = tree[tree[index].parent].leftmostChild;
-	while (tree[currentChild].rightSibling != TREENULLPTR)
-	{
-		currentChild = tree[currentChild].rightSibling;
-	}
-	// append deleted node's children to parent node's children
-	tree[currentChild].rightSibling = tree[index].leftmostChild;
-
 	// fix pointers to deleted node
 	if (tree[tree[index].parent].leftmostChild == index)
 	{
@@ -463,7 +454,7 @@ bool OrgTree::fire(std::string title)
 	else
 	{
 		// we are a right sibling
-		currentChild = tree[tree[index].parent].leftmostChild;
+		TREENODEPTR currentChild = tree[tree[index].parent].leftmostChild;
 		while (tree[currentChild].rightSibling != index)
 		{
 			currentChild = tree[currentChild].rightSibling;
@@ -471,27 +462,43 @@ bool OrgTree::fire(std::string title)
 		tree[currentChild].rightSibling = tree[index].rightSibling;
 	}
 
+	// skip to rightmost sibling
+	TREENODEPTR currentChild = tree[tree[index].parent].leftmostChild;
+	while (tree[currentChild].rightSibling != TREENULLPTR)
+	{
+		currentChild = tree[currentChild].rightSibling;
+	}
+	// append deleted node's children to parent node's children
+	tree[currentChild].rightSibling = tree[index].leftmostChild;
+
 
 
 	// move last element in place of removed element
 	// this makes fire even more computationally expensive than it already is,
 	// but we don't have to keep track of empty slots in the array
 	tree[index] = tree[size - 1];
-	// try to just fix parent's leftmost child index
-	if (tree[tree[index].parent].leftmostChild == (size - 1))
+	// if we move the root, we don't have to worry about parent or right sibling indices
+	if (tree[index].parent == TREENULLPTR) root = index;
+	else // fix indices
 	{
-		tree[tree[index].parent].leftmostChild = index;
-	}
-	else // we have to fix a child's right sibling index
-	{
-		currentChild = tree[tree[index].parent].leftmostChild;
-		while (currentChild != index)
+		// try to just fix parent's leftmost child index
+		if (tree[tree[index].parent].leftmostChild == (size - 1))
 		{
-			if (tree[currentChild].rightSibling == (size - 1))
+			tree[tree[index].parent].leftmostChild = index;
+		}
+		else // we have to fix a child's right sibling index
+		{
+			currentChild = tree[tree[index].parent].leftmostChild;
+			// loop until we either reach the end of the children or we've fixed the index
+			while (currentChild != index && currentChild != -1)
 			{
-				tree[currentChild].rightSibling = index;
+				// fix the right sibling index
+				if (tree[currentChild].rightSibling == (size - 1))
+				{
+					tree[currentChild].rightSibling = index;
+				}
+				currentChild = tree[currentChild].rightSibling;
 			}
-			currentChild = tree[currentChild].rightSibling;
 		}
 	}
 	// we can now pretend the last element is gone
