@@ -20,9 +20,9 @@ struct TreeNode
 {
 	std::string title;
 	std::string name;
-	int parent;
-	int leftmostChild;
-	int rightSibling;
+	TREENODEPTR parent;
+	TREENODEPTR leftmostChild;
+	TREENODEPTR rightSibling;
 };
 
 class OrgTree
