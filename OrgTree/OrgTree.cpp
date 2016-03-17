@@ -472,6 +472,7 @@ bool OrgTree::fire(std::string title)
 	else if (index == root)
 	{
 		std::cerr << "(fire) Cannot fire root node." << std::endl;
+		return false;
 	}
 
 	// update parent indices of children
