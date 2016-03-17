@@ -37,14 +37,14 @@ private:
 
 	void _printSubTree(TREENODEPTR subTreeRoot, int level) const;
 
-	void _write(std::ofstream& file, TREENODEPTR subTreeRoot) const;
+	void _writeSubTree(std::ofstream& file, TREENODEPTR subTreeRoot) const;
 
 public:
 	OrgTree();
 
 	~OrgTree();
 
-	int addRoot(std::string title, std::string name);
+	TREENODEPTR addRoot(std::string title, std::string name);
 
 	unsigned int getSize() const;
 
@@ -60,9 +60,9 @@ public:
 
 	std::string name(TREENODEPTR node) const;
 
-	void printSubTree(TREENODEPTR subTreeRoot) const;
+	void print() const;
 
-	void printTree() const;
+	void printSubTree(TREENODEPTR subTreeRoot) const;
 
 	TREENODEPTR find(std::string title) const;
 
@@ -70,7 +70,9 @@ public:
 
 	void write(std::string filename) const;
 
-	int hire(TREENODEPTR supervisor, std::string title, std::string name);
+	void writeSubTree(std::string filename, TREENODEPTR subTreeRoot) const;
+
+	TREENODEPTR hire(TREENODEPTR supervisor, std::string title, std::string name);
 
 	bool fire(std::string title);
 };

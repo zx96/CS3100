@@ -23,8 +23,7 @@
  */
 OrgTree::OrgTree()
 {
-	// allocate the tree array on the heap
-	tree = new struct TreeNode[ORGTREE_DEFAULT_CAPACITY];
+	tree = new TreeNode[ORGTREE_DEFAULT_CAPACITY];
 	capacity = ORGTREE_DEFAULT_CAPACITY;
 }
 
@@ -37,7 +36,6 @@ OrgTree::OrgTree()
  */
 OrgTree::~OrgTree()
 {
-	// avoid leaking memory
 	delete[] tree;
 }
 
@@ -51,9 +49,8 @@ OrgTree::~OrgTree()
  *
  * Returns:       The index of the new root node of the tree.
  */
-int OrgTree::addRoot(std::string title, std::string name)
+TREENODEPTR OrgTree::addRoot(std::string title, std::string name)
 {
-	// insert the root node in the array
 	ensureCapacity();
 	// use size as the index for the new node (last spot in array)
 	tree[size] = TreeNode{title, name, TREENULLPTR, TREENULLPTR, TREENULLPTR};
@@ -197,6 +194,18 @@ std::string OrgTree::name(TREENODEPTR node) const
 }
 
 /**
+ * Prints the contents of the entire tree to stdout.
+ *
+ * Precondition:  None.
+ * Postcondition: None.
+ * Performance:   Θ(n), n is the total number of nodes in the tree
+ */
+void OrgTree::print() const
+{
+	printSubTree(root);
+}
+
+/**
  * Performs a traversal of the tree and prints the contents to stdout.
  *
  * Precondition:  None.
@@ -233,18 +242,6 @@ void OrgTree::_printSubTree(TREENODEPTR subTreeRoot, int level) const
 }
 
 /**
- * Prints the contents of the entire tree to stdout.
- *
- * Precondition:  None.
- * Postcondition: None.
- * Performance:   Θ(n), n is the total number of nodes in the tree
- */
-void OrgTree::printTree() const
-{
-	printSubTree(root);
-}
-
-/**
  * Returns the index of the node with a given title in the tree.
  *
  * Precondition:  None.
@@ -264,6 +261,16 @@ TREENODEPTR OrgTree::find(std::string title) const
 	return -1;
 }
 
+/**
+ * Reads in a tree from a file with the given name.
+ *
+ * Precondition:  A file with the given name exists and contains a valid tree.
+ * Postcondition: This OrgTree is overwritten with the tree in the file.
+ * Performance:   Best: Θ(n), n is the number of lines in the file (each node has one child)
+ *                Worst: Θ(n^2), n is the number of lines in the file (all of the nodes share a common parent)
+ *
+ * Returns:       true if the file was read successfully; false otherwise.
+ */
 bool OrgTree::read(std::string filename)
 {
 	std::ifstream file(filename);
@@ -344,17 +351,47 @@ bool OrgTree::read(std::string filename)
 	return true;
 }
 
+/**
+ * Writes this OrgTree to a file with the given name.
+ *
+ * Precondition:  The filename is valid on the current platform and can be written to.
+ * Postcondition: The file is created or overwritten.
+ * Performance:   Θ(n), n is the total number of nodes in the tree
+ */
 void OrgTree::write(std::string filename) const
+{
+	writeSubTree(filename, root);
+}
+
+/**
+ * Writes a subtree of this OrgTree to a file with the given name.
+ *
+ * Precondition:  The filename is valid on the current platform and can be written to.
+ * Postcondition: The file is created or overwritten.
+ * Performance:   Θ(n), n is the total number of nodes in the subtree
+ */
+void OrgTree::writeSubTree(std::string filename, TREENODEPTR subTreeRoot) const
 {
 	std::ofstream file;
 	file.open(filename, std::ofstream::out | std::ofstream::trunc);
 
-	_write(file, root);
+	if (!file.is_open())
+	{
+		std::cerr << "(write) Could not open file for writing: " << filename << std::endl;
+		return;
+	}
 
-	file.close();
+	_writeSubTree(file, subTreeRoot);
 }
 
-void OrgTree::_write(std::ofstream& file, TREENODEPTR subTreeRoot) const
+/**
+ * Writes a subtree of this OrgTree to the file with the given handle
+ *
+ * Precondition:  The file is open and can be written to.
+ * Postcondition: The file is created or overwritten.
+ * Performance:   Θ(n), n is the total number of nodes in the subtree
+ */
+void OrgTree::_writeSubTree(std::ofstream& file, TREENODEPTR subTreeRoot) const
 {
 	// reached a leaf node
 	if (subTreeRoot == TREENULLPTR) return;
@@ -365,7 +402,7 @@ void OrgTree::_write(std::ofstream& file, TREENODEPTR subTreeRoot) const
 	for (TREENODEPTR currentChild = tree[subTreeRoot].leftmostChild;
 	     currentChild != TREENULLPTR; currentChild = tree[currentChild].rightSibling)
 	{
-		_write(file, currentChild);
+		_writeSubTree(file, currentChild);
 	}
 
 	// signify that we've reached the end of our subtree
@@ -381,7 +418,7 @@ void OrgTree::_write(std::ofstream& file, TREENODEPTR subTreeRoot) const
  *
  * Returns:       The index of the newly added node, or -1 if the node couldn't be added.
  */
-int OrgTree::hire(TREENODEPTR supervisor, std::string title, std::string name)
+TREENODEPTR OrgTree::hire(TREENODEPTR supervisor, std::string title, std::string name)
 {
 	// check that the supervisor is a valid node
 	if (supervisor >= size)
@@ -489,7 +526,7 @@ bool OrgTree::fire(std::string title)
 		else // we have to fix a child's right sibling index
 		{
 			currentChild = tree[tree[index].parent].leftmostChild;
-			// loop until we either reach the end of the children or we've fixed the index
+			// loop until we either reach the end of the children (our node was rightmost) or we've fixed the index
 			while (currentChild != index && currentChild != -1)
 			{
 				// fix the right sibling index
@@ -523,6 +560,7 @@ void OrgTree::ensureCapacity()
 		// create a new tree with twice the capacity
 		capacity <<= 1;
 		TreeNode *newTree = new TreeNode[capacity];
+
 		// copy the tree contents
 		for (int i = 0; i < size; i++)
 		{

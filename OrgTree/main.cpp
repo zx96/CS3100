@@ -5,7 +5,7 @@ using namespace std;
 
 int main() {
 	OrgTree *t = new OrgTree();
-	t->printTree();
+	t->print();
 	t->addRoot("CEO", "Fred");
 	int root = t->getRoot();
 	t->hire(root, "CFO", "George");
@@ -23,13 +23,13 @@ int main() {
 		t->hire(t->find("Numbers Guy"), std::to_string(i), std::to_string(i));
 	}
 
-	t->printTree();
+	t->print();
 	std::cout << std::endl;
 
 	t->fire("CFO");
 	t->addRoot("Super CEO", "Jesus");
 
-	t->printTree();
+	t->print();
 	std::cout << std::endl;
 
 	t->write("test");
@@ -39,11 +39,18 @@ int main() {
 	OrgTree *t2 = new OrgTree();
 	if (!t2->read("test")) return -1;
 
-	t2->printTree();
+	t2->print();
 	std::cout << std::endl;
 
 	std::cout << t2->getSize() << std::endl;
 	std::cout << t2->leftmostChild(t2->getSize()) << std::endl;
+	std::cout << std::endl;
+
+	std::cout << t2->title(t2->find("Scrubmaster Assistant")) << std::endl;
+	std::cout << t2->name(t2->find("Scrubmaster Assistant")) << std::endl;
+	std::cout << t2->parent(t2->find("Scrubmaster Assistant")) << std::endl;
+	std::cout << t2->leftmostChild(t2->find("Scrubmaster Assistant")) << std::endl;
+	std::cout << t2->rightSibling(t2->find("Scrubmaster Assistant")) << std::endl;
 	std::cout << std::endl;
 
 	std::cout << t2->getRoot() << std::endl;
@@ -51,16 +58,16 @@ int main() {
 	std::cout << t2->getRoot() << std::endl;
 	std::cout << std::endl;
 
-	t2->printTree();
+	t2->print();
 
 	t2->fire("1");
-	t2->printTree();
+	t2->print();
 	t2->fire("4");
-	t2->printTree();
+	t2->print();
 	t2->fire("3");
-	t2->printTree();
+	t2->print();
 	t2->fire("5");
-	t2->printTree();
+	t2->print();
 	t2->fire("Numbers Guy");
-	t2->printTree();
+	t2->print();
 }
