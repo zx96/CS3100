@@ -86,7 +86,7 @@ unsigned int OrgTree::getSize() const
  * Postcondition: None.
  * Performance:   Θ(1)
  *
- * Returns:       The root node's index, or -1 if there is no root
+ * Returns:       The root node's index, or TREENULLPTR if there is no root
  */
 TREENODEPTR OrgTree::getRoot() const
 {
@@ -101,14 +101,14 @@ TREENODEPTR OrgTree::getRoot() const
  * Performance:   Θ(1)
  *
  * Returns:       The index of the leftmost child of node,
- *                or -1 if the node does not exist.
+ *                or TREENULLPTR if the node does not exist.
  */
 TREENODEPTR OrgTree::leftmostChild(TREENODEPTR node) const
 {
 	if (node >= size)
 	{
 		std::cerr << "(leftmostChild) Node " << node << " does not exist." << std::endl;
-		return -1;
+		return TREENULLPTR;
 	}
 	return tree[node].leftmostChild;
 }
@@ -121,14 +121,14 @@ TREENODEPTR OrgTree::leftmostChild(TREENODEPTR node) const
  * Performance:   Θ(1)
  *
  * Returns:       The index of the right sibling of node,
- *                or -1 if the node does not exist.
+ *                or TREENULLPTR if the node does not exist.
  */
 TREENODEPTR OrgTree::rightSibling(TREENODEPTR node) const
 {
 	if (node >= size)
 	{
 		std::cerr << "(rightSibling) Node " << node << "does not exist." << std::endl;
-		return -1;
+		return TREENULLPTR;
 	}
 	return tree[node].rightSibling;
 }
@@ -141,14 +141,14 @@ TREENODEPTR OrgTree::rightSibling(TREENODEPTR node) const
  * Performance:   Θ(1)
  *
  * Returns:       The index of the parent of node,
- *                or -1 if the node does not exist.
+ *                or TREENULLPTR if the node does not exist.
  */
 TREENODEPTR OrgTree::parent(TREENODEPTR node) const
 {
 	if (node >= size)
 	{
 		std::cerr << "(parent) Node " << node << " does not exist." << std::endl;
-		return -1;
+		return TREENULLPTR;
 	}
 	return tree[node].parent;
 }
@@ -181,7 +181,7 @@ std::string OrgTree::title(TREENODEPTR node) const
  * Performance:   Θ(1)
  *
  * Returns:       The name of the employee represented by node,
- *                or -1 if the node does not exist.
+ *                or TREENULLPTR if the node does not exist.
  */
 std::string OrgTree::name(TREENODEPTR node) const
 {
@@ -250,7 +250,7 @@ void OrgTree::_printSubTree(TREENODEPTR subTreeRoot, int level) const
  *                Worst: Θ(n), n is the total number of nodes in the tree
  *
  * Returns:       The index of the node with the given title,
- *                or -1 if there is no such node.
+ *                or TREENULLPTR if there is no such node.
  */
 TREENODEPTR OrgTree::find(std::string title) const
 {
@@ -258,7 +258,7 @@ TREENODEPTR OrgTree::find(std::string title) const
 	{
 		if (tree[i].title == title) return i;
 	}
-	return -1;
+	return TREENULLPTR;
 }
 
 /**
@@ -416,7 +416,7 @@ void OrgTree::_writeSubTree(std::ofstream& file, TREENODEPTR subTreeRoot) const
  * Postcondition: The new node is inserted into the tree.
  * Performance:   Θ(n), n = number of child nodes of supervisor
  *
- * Returns:       The index of the newly added node, or -1 if the node couldn't be added.
+ * Returns:       The index of the newly added node, or TREENULLPTR if the node couldn't be added.
  */
 TREENODEPTR OrgTree::hire(TREENODEPTR supervisor, std::string title, std::string name)
 {
@@ -424,7 +424,7 @@ TREENODEPTR OrgTree::hire(TREENODEPTR supervisor, std::string title, std::string
 	if (supervisor >= size)
 	{
 		std::cerr << "(hire) Supervisor node " << supervisor << " does not exist" << std::endl;
-		return -1;
+		return TREENULLPTR;
 	}
 
 	// insert the new hire as the rightmost child
@@ -528,7 +528,7 @@ bool OrgTree::fire(std::string title)
 		{
 			currentChild = tree[tree[index].parent].leftmostChild;
 			// loop until we either reach the end of the children (our node was rightmost) or we've fixed the index
-			while (currentChild != index && currentChild != -1)
+			while (currentChild != index && currentChild != TREENULLPTR)
 			{
 				// fix the right sibling index
 				if (tree[currentChild].rightSibling == (size - 1))
